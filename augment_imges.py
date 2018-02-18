@@ -3,13 +3,20 @@ import csv
 import cv2
 import imutils
 import matplotlib.pyplot as plt
-
-read_directory = './images'
-write_directory = './images_extended'
-
+import pathlib
 
 def augment_image(image):
-	"""Return all rotated and flipped versions of the image"""
+	"""
+		Return all rotated and flipped versions of the image.
+
+		Args:
+			image (numpy.ndarray): image matrix to augment
+
+		Returns:
+			image_set (list of numpy.ndarrays): 
+				list of augmented imagex
+	
+	"""
 
 	image_set = []
 
@@ -24,44 +31,74 @@ def augment_image(image):
 
 	# vertical flip
 	image_set.append(cv2.flip(image, 1))
-	
+
 	return image_set
 
 
-# open csv for reading metadata
-with open('decor.csv', 'rt') as reading_csv:
-	data_reader = csv.reader(reading_csv, delimiter=' ', quotechar='|')
+def process_images(read_directory = './images', write_directory = './images_extended'):
+	"""
+		
+		Function reads initial images and augment them. Creates second
+		csv file which include whole features and new names of the images.
+		Creates directory to save new images if doesn't exists.
 
-	# open csv for creating the extended set metadata
-	with open('decor_extended.csv', 'wt', newline='') as writing_csv:
-		data_writer = csv.writer(writing_csv, delimiter=' ', quotechar='|')
+		Args:
+			read_directory  (str): directory containing initial pictures
+			write_directory (str): directory to save processed images
+	
+	"""
+	
+	# create output directory if doesn't exists
+	try:
+		pathlib.Path(write_directory).mkdir(parents=True, exist_ok=True) 
+	except:
+		raise Exception('Cannot create given directory!') 
 
-		index = 0
-		# iterate over data samples
-		for row in data_reader:
-			print(row)
+	# open csv for reading metadata
+	with open('decor.csv', 'rt') as reading_csv:
+		data_reader = csv.reader(reading_csv, delimiter=',', quotechar='|')
 
-			# extract the features
-			features = row[0].split(',')
-			image_name = features[-1]
+		# get header - first row in a file
+		header = next(data_reader)
 
-			# skip the header row
-			if image_name == 'file':
-				data_writer.writerow(row)
-				continue
+		# open csv for creating the extended set metadata
+		with open('decor_extended.csv', 'wt', newline='') as writing_csv:
+			data_writer = csv.writer(writing_csv, delimiter=',', quotechar='|')
 
-			# read the image
-			image = cv2.imread(os.path.join(read_directory, image_name),
-				               cv2.IMREAD_COLOR)
+			# copy header 
+			data_writer.writerow(header)
 
-			# write the new images and update the csv
-			for img in augment_image(image):
+			index = 0
+			
+			# iterate over data samples
+			for features in data_reader:
 
-				image_index = '%.4d.png' % index
-				cv2.imwrite(os.path.join(write_directory, image_index), img)
+				# get last element of the list
+				image_name = features[-1]
 
-				features[-1] = image_index
-				new_features = [','.join(features)]
+				# read the image
+				image = cv2.imread(os.path.join(read_directory, image_name),
+								   cv2.IMREAD_COLOR)
 				
-				data_writer.writerow(new_features)
-				index += 1
+				# write the new images and update the csv
+				for new_img in augment_image(image):
+
+					new_img_name = '%.4d.png' % index
+					cv2.imwrite(os.path.join(write_directory, new_img_name), new_img)
+
+					# copy existed features of processed image 
+					# and save them with a new image name 
+					features[-1] = new_img_name
+					data_writer.writerow(features)
+
+					index += 1
+
+
+if __name__ == "__main__":
+	
+	try:
+		process_images()
+	
+	except Exception as e:
+		
+		print(e)
