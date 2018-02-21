@@ -1,6 +1,7 @@
 import os
 import csv
 import cv2
+import numpy as np
 import imutils
 import matplotlib.pyplot as plt
 import pathlib
@@ -33,6 +34,20 @@ def augment_image(image):
 	image_set.append(cv2.flip(image, 1))
 
 	return image_set
+
+
+def remove_noisy_lines(img):
+	"""
+		Remove black lines from the margins
+	"""
+	img_size = img.shape[0]
+	img[0, 0:img_size] = 255 * np.ones((img_size, 3), dtype=np.uint8)
+	img[-1, 0:img_size] = 255 * np.ones((img_size, 3), dtype=np.uint8)
+	img[0:img_size, 0] = 255 * np.ones((img_size, 3), dtype=np.uint8)
+	img[0:img_size, -1] = 255 * np.ones((img_size, 3), dtype=np.uint8)
+
+	return img
+
 
 
 def process_images(read_directory = './images', write_directory = './images_extended'):
@@ -82,6 +97,9 @@ def process_images(read_directory = './images', write_directory = './images_exte
 				
 				# write the new images and update the csv
 				for new_img in augment_image(image):
+
+					# remove the black lines
+					new_img = remove_noisy_lines(new_img)
 
 					new_img_name = '%.4d.png' % index
 					cv2.imwrite(os.path.join(write_directory, new_img_name), new_img)

@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
+import matplotlib.pyplot as plt
 import cv2
 import os
 import pandas as pd
@@ -26,35 +27,35 @@ def read_data():
     labels_style = df['decor_label']
     labels_type = df['type_label']
     labels_style = labels_style.transpose()
-    print(labels_style)
     return labels_country, labels_style, labels_type
+
 
 """read images from file"""
 def read_images():
     data = np.zeros((3880, 768)) #number of files, number of clusters
-    path = os.getcwd()
-    path = path + "\\" + "images_extended"
     im_counter = 0;
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            impath = path + '\\' + file
-            img = cv2.imread(impath)
-            img = img.astype('float64')
-            b,g,r = cv2.split(img)
-            data[im_counter, 0:256] = make_histogram(r)
-            data[im_counter, 256:512] = make_histogram(g)
-            data[im_counter, 512:768] = make_histogram(b)                            
-            im_counter += 1
+    for image_name in os.listdir('images_extended'):
+        impath = os.path.join('images_extended', image_name)
+        print(impath)
+        img = cv2.imread(impath)
+        img = img.astype('uint8')
+
+        b,g,r = cv2.split(img)
+        data[im_counter, 0:256] = make_histogram(r)
+        data[im_counter, 256:512] = make_histogram(g)
+        data[im_counter, 512:768] = make_histogram(b)                            
+        im_counter += 1
     return data
+
 
 """make histograms"""
 def make_histogram(img):
-    #cut black edges from the image
     #apply mask so that only the patterns and interiors are taken into account
     hist, bins = np.histogram(img,bins=256)#
     hist = hist.reshape(-1,1)
     hist = hist.transpose()
     return hist
+
 
 def split_data(data, labels):
     index = 0
@@ -76,19 +77,23 @@ def split_data(data, labels):
         index += arr    
     return train,test,labels_train,labels_test
 
+
 def split_data_random(data, labels):
     
     return train,test,labels_train,labels_test
+
 
 def train_svm(training, labels):
     clf = SVC()
     clf.fit(training, labels) 
     return clf
     
+
 def predict(model, test):
     predictions = model.predict(test)
     return predictions
     
+
 def calculate_error(predicted, real):
     correct = 0
     for i in range(3880):
@@ -101,13 +106,13 @@ def calculate_error(predicted, real):
 if __name__ == "__main__":  
     labels_country, labels_style, labels_type = read_data()
     data = read_images()
-    train,test,labels_train,labels_test = split_data(data, labels_style)
-    train,test,labels_train,labels_test = split_data_random(data, labels_style)
-    print(labels_train)
-    model = train_svm(train, labels_train)
-    predictions = predict(model, test)
-    print(predictions)
-    print(labels_test)
+    #train,test,labels_train,labels_test = split_data(data, labels_style)
+    #train,test,labels_train,labels_test = split_data_random(data, labels_style)
+    #print(labels_train)
+    #model = train_svm(train, labels_train)
+    #predictions = predict(model, test)
+    #print(predictions)
+    #print(labels_test)
     #error = calculate_error(predictions, labels_test)
     
     #read_data_test()
