@@ -1,2 +1,7 @@
 *.pyc
+__pycache__/
+decor_extended.csv/
 images_extended/
+by_country/
+by_product/
+by_style/
