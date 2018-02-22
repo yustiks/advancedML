@@ -1,4 +1,5 @@
 import os
+import sys
 import cv2
 import csv
 import pathlib
@@ -146,6 +147,9 @@ def divide_by_country(data_lines, training_percentage=0.8):
 
 
 if __name__ == "__main__":
+
+	# shtomper
+	sys.exit("Script blocked ! Don't alter the data")
 
 	data_size = 485
 	data_lines = data_size * [None]

@@ -1,4 +1,5 @@
 import os
+import sys
 import csv
 import cv2
 import numpy as np
@@ -111,6 +112,9 @@ def process_images(read_directory = './images', write_directory = './images_exte
 
 if __name__ == "__main__":
 	
+	# shtomper
+	sys.exit("Script blocked ! Don't alter the data")
+
 	try:
 		process_images()
 	
