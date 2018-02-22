@@ -1,9 +1,11 @@
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.svm import SVC
+import matplotlib.pyplot as plt
 import cv2
 import os
 import pandas as pd
+
 
 """
 def read_data_test():
@@ -18,67 +20,65 @@ def read_data_test():
     #labels_country = data_matrix[:,0]
     print(data_matrix)
 """
-        
+
+    
 """read data from .csv file"""
-def read_data():
-    df = pd.read_csv('decor_extended.csv', encoding = "Latin-1")
-    labels_country = df['country_label']
-    labels_style = df['decor_label']
-    labels_type = df['type_label']
-    labels_style = labels_style.transpose()
-    print(labels_style)
-    return labels_country, labels_style, labels_type
+def read_data(problem):
+    path = os.getcwd()
+    path_train = os.path.join(path, problem, 'training.csv')
+    path_test = os.path.join(path, problem, 'testing.csv')
+    train = pd.read_csv(path_train, encoding = "Latin-1")
+    test = pd.read_csv(path_test, encoding = "Latin-1")
+    labels_train = train.iloc[:,1]
+    labels_test = test.iloc[:,1]
+    #labels_train = labels.transpose()
+    #labels_test = labels.transpose()
+    print(labels_train) #3088
+    print(labels_test) #792
+    return labels_train, labels_test
+
 
 """read images from file"""
-def read_images():
-    data = np.zeros((3880, 768)) #number of files, number of clusters
-    path = os.getcwd()
-    path = path + "\\" + "images_extended"
-    im_counter = 0;
-    for root, dirs, files in os.walk(path):
-        for file in files:
-            impath = path + '\\' + file
-            img = cv2.imread(impath)
-            img = img.astype('float64')
-            b,g,r = cv2.split(img)
-            data[im_counter, 0:256] = make_histogram(r)
-            data[im_counter, 256:512] = make_histogram(g)
-            data[im_counter, 512:768] = make_histogram(b)                            
-            im_counter += 1
+def read_images(problem):
+    images_train = np.zeros((3088, 768)) #number of files, number of clusters
+    images_test = np.zeros((792, 768))
+    im_counter = 0
+    #path = os.getcwd()
+    for image_name in os.listdir(os.path.join(problem, 'training')):
+        train = os.path.join(problem, 'training', image_name)
+        print(train)
+        row = each_image(train)
+        images_train[im_counter, 0:768] = row                           
+        im_counter += 1
+    im_counter = 0
+    for image_name in os.listdir(os.path.join(problem, 'testing')):
+        test = os.path.join(problem, 'testing', image_name)
+        print(test)
+        row = each_image(test)
+        images_test[im_counter, 0:768] = row                           
+        im_counter += 1
+    return images_train, images_test
+
+
+def each_image(path):
+    data = np.zeros((1, 768))
+    img = cv2.imread(path)
+    img = img.astype('uint8')
+    b,g,r = cv2.split(img)
+    data[0, 0:256] = make_histogram(r)
+    data[0, 256:512] = make_histogram(g)
+    data[0, 512:768] = make_histogram(b)
     return data
+
 
 """make histograms"""
 def make_histogram(img):
-    #cut black edges from the image
     #apply mask so that only the patterns and interiors are taken into account
-    hist, bins = np.histogram(img,bins=256)#
+    hist, bins = np.histogram(img, bins = 256, range = (5,250))
     hist = hist.reshape(-1,1)
     hist = hist.transpose()
     return hist
 
-def split_data(data, labels):
-    index = 0
-    train = np.zeros((3000, 768))
-    test = np.zeros((880, 768))
-    labels_train = []
-    labels_test = []
-    #first split into product and pattern
-    #then into different styles
-    for i in range(max(labels)):
-        #train = [data[i, :] for i == i]   #append collumns
-        #remember to take part of products and part of patterns
-        arr = len(np.extract(labels == 1, labels))
-        #wrong, because the data needs to be appended to the bottom
-        #make train and test as numpy arrays
-        #probably good for labels
-        train.append(data[index : index + arr - arr/5])
-        test.append(data[index + arr - arr/5 : index + arr])
-        index += arr    
-    return train,test,labels_train,labels_test
-
-def split_data_random(data, labels):
-    
-    return train,test,labels_train,labels_test
 
 def train_svm(training, labels):
     clf = SVC()
@@ -99,15 +99,15 @@ def calculate_error(predicted, real):
     return accuracy
 
 if __name__ == "__main__":  
-    labels_country, labels_style, labels_type = read_data()
-    data = read_images()
-    train,test,labels_train,labels_test = split_data(data, labels_style)
-    train,test,labels_train,labels_test = split_data_random(data, labels_style)
-    print(labels_train)
-    model = train_svm(train, labels_train)
-    predictions = predict(model, test)
-    print(predictions)
-    print(labels_test)
-    #error = calculate_error(predictions, labels_test)
+    problem = "by_style"
+    labels_train, labels_test = read_data(problem)
+    images_train, images_test = read_images(problem)
     
-    #read_data_test()
+    #train,test,labels_train,labels_test = split_data(data, labels_style)
+    #train,test,labels_train,labels_test = split_data_random(data, labels_style)
+    #print(labels_train)
+    #model = train_svm(train, labels_train)
+    #predictions = predict(model, test)
+    #print(predictions)
+    #print(labels_test)
+    #error = calculate_error(predictions, labels_test)
