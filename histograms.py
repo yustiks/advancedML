@@ -94,7 +94,8 @@ def each_image(path, clusters_size):
     data[0, clusters_size:2*clusters_size] = make_histogram(g, clusters_size)
     data[0, 2*clusters_size:] = make_histogram(b, clusters_size)
 
-    return data
+    # normalize histogram
+    return data * (3 * clusters_size / sum(data[0]))
 
 
 """make histograms"""
