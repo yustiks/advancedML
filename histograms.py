@@ -36,7 +36,7 @@ def read_data(problem):
     #labels_test = labels.transpose()
     # print(labels_train) #3088
     # print(labels_test) #792
-    return labels_train, labels_test
+    return np.asarray(labels_train[::8]), np.asarray(labels_test[::8])
 
 
 """read images from file"""
@@ -47,7 +47,12 @@ def read_images(problem, training_size, testing_size, clusters_size):
     im_counter = 0
 
     for image_name in os.listdir(os.path.join(problem, 'training')):
-        print('{0} - training - {1}'.format(clusters_size, image_name))
+        
+        if int(image_name[:4]) % 8 > 0:
+            continue
+
+        print('{0} - {1} - training - {2}'.format(
+        	problem, clusters_size, image_name))
         train = os.path.join(problem, 'training', image_name)
         # print(train)
         row = each_image(train, clusters_size)
@@ -56,7 +61,12 @@ def read_images(problem, training_size, testing_size, clusters_size):
     im_counter = 0
 
     for image_name in os.listdir(os.path.join(problem, 'testing')):
-        print('{0} - testing - {1}'.format(clusters_size, image_name))
+        
+        if int(image_name[:4]) % 8 > 0:
+            continue
+
+        print('{0} - {1} - testing - {2}'.format(
+        	problem, clusters_size, image_name))
         test = os.path.join(problem, 'testing', image_name)
         # print(test)
         row = each_image(test, clusters_size)
@@ -114,18 +124,23 @@ def calculate_error(predicted, real):
     print(accuracy)
     return accuracy
 
-def serialize_histograms(problem, dataset_type, dataset, clusters_size):
+def serialize_histograms(problem, dataset_type, dataset, labels, clusters_size):
+	
 	path = os.path.join(problem, dataset_type + \
 	 ('_histograms_%.3d.dat' % clusters_size))
 	dataset.dump(path)
+
+	labels_path = os.path.join(problem, dataset_type + \
+	 ('_labels_%.3d.dat' % clusters_size))
+	labels.dump(labels_path)
 	
 
 if __name__ == "__main__":  
     
     dataset_sizes = {
-        'by_country' : (3096, 784),
-        'by_product' : (3096, 784),
-        'by_style' : (3088, 792)
+        'by_country' : (387, 98),
+        'by_product' : (387, 98),
+        'by_style' : (386, 99)
     }
 
     # create different bin sizes
@@ -138,8 +153,8 @@ if __name__ == "__main__":
             images_train, images_test = read_images(problem,
             dataset_sizes[problem][0], dataset_sizes[problem][1], bin_size)
 
-            serialize_histograms(problem, 'training', images_train, bin_size)
-            serialize_histograms(problem, 'testing', images_test, bin_size)
+            serialize_histograms(problem, 'training', images_train, labels_train, bin_size)
+            serialize_histograms(problem, 'testing', images_test, labels_test, bin_size)
 
     #train,test,labels_train,labels_test = split_data(data, labels_style)
     #train,test,labels_train,labels_test = split_data_random(data, labels_style)
