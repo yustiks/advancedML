@@ -7,7 +7,7 @@ features:
 - SIFT histograms (Justina)
 - bag of words (Dawid)
 - alexnet (Emil)
-- hog (Ashwin)
+- hog (Aswin)
 - colour histograms (Magda)
 
 algorithms:
@@ -15,4 +15,4 @@ algorithms:
  - deep learning (Emil, Dawid, Magda)
  - knn (Justina)
  - svm (Magda)
- - adaboost (Ashwin)
+ - adaboost (Aswin)
