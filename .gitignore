@@ -1,1 +1,10 @@
 *.pyc
+__pycache__/
+decor_extended.csv/
+images_extended/
+by_country/
+by_product/
+by_style/
+deep_learning/data_by_country
+deep_learning/data_by_product
+deep_learning/data_by_style
