@@ -169,7 +169,7 @@ if __name__ == "__main__":
 
 	for key, data in best_values.items():
 
-		print('Feature type:', key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'])
+		print('Feature type: %10s' % key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'])
 
 
 	plot_dataset = best_values['by_style']
