@@ -1,3 +1,5 @@
+#!/usr/bin/env python -W ignore::DeprecationWarning
+
 import pandas as pd
 import numpy as np
 import cv2
@@ -12,6 +14,15 @@ from sklearn.metrics import accuracy_score
 import graphviz
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import AdaBoostRegressor
+from xgboost import XGBClassifier
+import warnings
+from enum import Enum
+
+
+class Library(Enum):
+
+	SCIKIT = "scikit"
+	XGBOOST = "xgboost"
 
 
 def get_data(path, datasets_path):
@@ -104,7 +115,7 @@ def load_initial_data():
 	# create dict
 	best_values = dict()
 	for data in datasplit_values:
-		best_values[data] = {'accuracy': 0, 'class_names': 0, 'values': [], 'data_type': None}
+		best_values[data] = {'accuracy': 0, 'class_names': 0, 'values': [], 'data_type': None, 'lib': None}
 
 	# load data information
 	df = pd.read_csv('./decor.csv', sep=',', header=0)
@@ -127,7 +138,8 @@ def load_initial_data():
 	return data_set, best_values
 
 if __name__ == "__main__":
-	
+	warnings.filterwarnings("ignore", category=DeprecationWarning) 
+
 	data_set, best_values = load_initial_data()
 
 	rng = np.random.RandomState(1)
@@ -146,17 +158,26 @@ if __name__ == "__main__":
 
 				testing_data, testing_labels, training_data, training_labels = get_pickles(data_parts)
 
+				# scikit-learn
 				classifier = tree.DecisionTreeClassifier().fit(training_data, training_labels)
-
 				accuracy = classifier.score(testing_data, testing_labels)
 
-				if best_values[feature_name]['accuracy'] < accuracy:
+				# xgboost
+				xgb = XGBClassifier().fit(training_data, training_labels)
+				xgb_result = xgb.predict(testing_data)
+				predictions = [round(value) for value in xgb_result]
+				xgb_accuracy = accuracy_score(testing_labels, predictions)
+
+				lib, best = (Library.SCIKIT, accuracy) if accuracy > xgb_accuracy else (Library.XGBOOST, xgb_accuracy)
+
+				if best_values[feature_name]['accuracy'] < best:
 					
-					best_values[feature_name]['accuracy'] = accuracy
+					best_values[feature_name]['accuracy'] = best
 					best_values[feature_name]['values'] = [testing_data, testing_labels, training_data, training_labels]
 					best_values[feature_name]['data_type'] = colour_value
+					best_values[feature_name]['lib'] = lib
 
-				print('Data type: %s, Accuracy: %.2f' % (colour_value, accuracy))
+				print('Data type: %s, Scikit-Learn Acc: %.2f, XGBoost Acc: %.2f' % (colour_value, accuracy, xgb_accuracy))
 
 
 	print()
@@ -164,13 +185,17 @@ if __name__ == "__main__":
 
 	for key, data in best_values.items():
 
-		print('Feature type: %10s' % key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'])
+		print('Feature type: %10s' % key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'], 'Lib:', data['lib'])
 
+
+	# plot tree (works only for scikit)
 
 	plot_dataset = best_values['by_style']
-	clf_data = plot_dataset['values']
-	tr, tr_l = np.concatenate((clf_data[0], clf_data[2])), np.concatenate((clf_data[1], clf_data[3]))
 
-	clf = tree.DecisionTreeClassifier().fit(tr, tr_l)
+	if plot_dataset['lib'] == Library.SCIKIT:
+		clf_data = plot_dataset['values']
+		tr, tr_l = np.concatenate((clf_data[0], clf_data[2])), np.concatenate((clf_data[1], clf_data[3]))
 
-	plot_data(clf, plot_dataset['class_names'])
+		clf = tree.DecisionTreeClassifier().fit(tr, tr_l)
+
+		plot_data(clf, plot_dataset['class_names'])
