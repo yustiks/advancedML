@@ -10,6 +10,8 @@ import _pickle as pickle
 from sklearn import tree
 from sklearn.metrics import accuracy_score
 import graphviz
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import AdaBoostRegressor
 
 
 def get_data(path, datasets_path):
@@ -86,33 +88,54 @@ def get_pickles(sets):
 	return pickles
 
 
-def plot_data(classifier):
-	dot_data = tree.export_graphviz(classifier, out_file=None, 
-		feature_names=iris.feature_names,  
-		class_names=iris.target_names,  
+def plot_data(classifier, labels):
+
+	dot_data = tree.export_graphviz(classifier, out_file=None,  
+		class_names=labels,  
 		filled=True, rounded=True,  
 		special_characters=True
 	)  
 	graph = graphviz.Source(dot_data)  
-	graph 
+	graph.render("output")  
 
-if __name__ == "__main__":
+
+def load_initial_data():
 	
 	datasplit_values = ('by_style', 'by_country', 'by_product')
+	label_vaues = ('decor', 'country', 'type')
 	data_set = get_data('./', datasplit_values)
 
-	best_accuracy = 0
-	best_values = dict.fromkeys(datasplit_values, {'accuracy': 0, 'class_names': 0})
+	# create dict
+	best_values = dict()
+	for data in datasplit_values:
+		best_values[data] = {'accuracy': 0, 'class_names': 0, 'values': [], 'data_type': None}
 
 	# load data information
 	df = pd.read_csv('./decor.csv', sep=',', header=0)
 
-	style_labels, country_labels, product_labels = set(df['decor_label']), set(df['country_label']), set(df['type_label'])
 
-	print(country_labels, style_labels, product_labels)
-	for label in country_labels:
-		print(label, df[df.country>='1'].head(1))
-	sys.exit(2)
+	for i, value in enumerate(datasplit_values):
+
+		current_label = '%s_label' % label_vaues[i]
+
+		labels_set = set(df[current_label])
+		names = []
+
+		for i_label in labels_set:
+
+			label_name = df[df[current_label]==i_label].iloc[0][label_vaues[i]]
+			print(current_label, label_name, value)
+			names.append(label_name)
+
+		best_values[value]['class_names'] = names
+
+	return data_set, best_values
+
+if __name__ == "__main__":
+	
+	data_set, best_values = load_initial_data()
+	
+	rng = np.random.RandomState(1)
 
 	print('Loading data....')
 
@@ -130,13 +153,29 @@ if __name__ == "__main__":
 
 				classifier = tree.DecisionTreeClassifier().fit(training_data, training_labels)
 
-				result = classifier.predict(testing_data)
+				accuracy = classifier.score(testing_data, testing_labels)
 
-				accuracy = accuracy_score(testing_labels, result)
-
-				if accuracy > best_accuracy:
-					best_values.append(testing_data, testing_labels, training_data, training_labels)
+				if best_values[feature_name]['accuracy'] < accuracy:
+					
+					best_values[feature_name]['accuracy'] = accuracy
+					best_values[feature_name]['values'] = [testing_data, testing_labels, training_data, training_labels]
+					best_values[feature_name]['data_type'] = colour_value
 
 				print('Data type: %s, Accuracy: %.2f' % (colour_value, accuracy))
 
 
+	print()
+	print('Best scores:')
+
+	for key, data in best_values.items():
+
+		print('Feature type:', key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'])
+
+
+	plot_dataset = best_values['by_style']
+	clf_data = plot_dataset['values']
+	tr, tr_l = np.concatenate((clf_data[0], clf_data[2])), np.concatenate((clf_data[1], clf_data[3]))
+
+	clf = tree.DecisionTreeClassifier().fit(tr, tr_l)
+
+	plot_data(clf, plot_dataset['class_names'])
