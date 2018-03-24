@@ -4,38 +4,82 @@ import cv2
 import sys
 import matplotlib.pyplot as plt
 import os
+import pathlib
+import _pickle as pickle
+
+
+def create_dirs(datasets_path, folder_name):
+
+	new_paths = []
+
+	for path in datasets_path:
+
+		new_path = os.path.join(path, folder_name)
+		pathlib.Path(new_path).mkdir(parents=True, exist_ok=True) 
+
+		new_paths.append(new_path)
+
+	return new_paths
+
+
+
+def create_bow(directory, df):
+
+	# initial data
+	data_size = df.shape[0]
+	bow = cv2.BOWKMeansTrainer(data_size)
+	labels = df['label'].values.tolist()
+
+	for index, row in df.iterrows():
+
+		img_path = os.path.join(directory, row[0])
+
+		img = cv2.imread(img_path)
+		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+
+		sift = cv2.xfeatures2d.SIFT_create()
+
+		#img = cv2.drawKeypoints(gray, kp, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+		#plt.imshow(img)
+		
+		kp, des = sift.detectAndCompute(gray,None)
+
+		bow.add(des)
+		
+		#print(len(kp), len(des))
+		#cv2.imwrite('/home/dawid/sift_keypoints.jpg',des[3])
+
+	return bow.cluster(), labels
 
 
 if __name__ == "__main__":
 	
-	datasets_path = ('./by_style/', './by_country/', './by_type/' )
+	datasets_path = ('./by_style/', './by_country/', './by_product/' )
+	folder_name = 'bag_of_words'
+	
+	new_paths = create_dirs(datasets_path, folder_name)
 
-	for path in datasets_path:
+	print("Start processing...")
+	
+	for i, path in enumerate(datasets_path):
 
-		testing = pd.read_csv(os.path.join(path, 'testing.csv'), sep=',', header=0)
+		print("Processing %s data" % path)
 
-		training = pd.read_csv(os.path.join(path, 'testing.csv'), sep=',', header=0)
-
-		for index, row in training.iterrows(): 
+		for data_type in ['training', 'testing']:
 			
-			img_path = os.path.join(path, 'testing', row[0])
+			data = pd.read_csv(os.path.join(path, '%s.csv' % data_type), sep=',', \
+				names = ["file", "label"])
 
-			print(img_path)
-			img = cv2.imread(img_path)
-			gray= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
+			print("%s data" % data_type, data.shape, 'size')
 
-			sift = cv2.xfeatures2d.SIFT_create()
+			data_path = os.path.join(path, data_type)
 
-			kp = sift.detect(gray, None)
+			training_data, labels = create_bow(data_path, data)
 
-			img = cv2.drawKeypoints(gray, kp, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+			histogram_dir = os.path.join(new_paths[i], '%s_histograms_256.dat' % data_type)
+			labels_dir = os.path.join(new_paths[i], '%s_labels_256.dat' % data_type)
 
-			plt.imshow(img)
-			kp, des = sift.detectAndCompute(gray,None)
+			pickle.dump(training_data, open(histogram_dir, "wb" ))
+			pickle.dump(labels, open(labels_dir, "wb" ))
 
-			print(len(kp), len(des))
-
-			cv2.imwrite('/home/dawid/sift_keypoints.jpg',des[3])
-
-			#sys.exit(2)
 

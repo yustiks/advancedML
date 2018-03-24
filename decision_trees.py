@@ -16,8 +16,6 @@ from sklearn.ensemble import AdaBoostRegressor
 
 def get_data(path, datasets_path):
 
-	colur_values = ["{0:0>3}".format(2**x) for x in range(5, 9)]
-
 	# create dataset
 	data_set = dict()		
 
@@ -41,15 +39,7 @@ def get_data(path, datasets_path):
 			current_path = os.path.join('./', path, feature)
 
 			# files from current data directory
-			files = glob.glob("%s/*.dat" % current_path)
-
-			# organize files by colours
-			for colour_val in colur_values:
-
-				data_set[feature][path][colour_val] = {
-					'testing': [],
-					'training': []
-				}
+			files = glob.glob("%s/*.dat" % current_path)			
 
 			# add files paths
 			for data_file in files:
@@ -59,6 +49,12 @@ def get_data(path, datasets_path):
 				# in some cases)	
 				number = re.findall(r'\d+', data_file)[0]
 
+				if not number in data_set[feature][path]:
+					data_set[feature][path][number] = {
+						'testing': [],
+						'training': []
+					}
+				
 				# split testing and training dataset
 				data_type = 'testing'
 
@@ -124,7 +120,6 @@ def load_initial_data():
 		for i_label in labels_set:
 
 			label_name = df[df[current_label]==i_label].iloc[0][label_vaues[i]]
-			print(current_label, label_name, value)
 			names.append(label_name)
 
 		best_values[value]['class_names'] = names
@@ -134,7 +129,7 @@ def load_initial_data():
 if __name__ == "__main__":
 	
 	data_set, best_values = load_initial_data()
-	
+
 	rng = np.random.RandomState(1)
 
 	print('Loading data....')
