@@ -49,17 +49,20 @@ def create_bow(directory, df, algorithm=Algorithm.SWIFT, value=None):
 		if int(os.path.splitext(file_name)[0]) % 7 != 0:
 			continue
 
+		if (int(os.path.splitext(file_name)[0]) / 7) % 10 != 0:
+			continue
+
 		img_path = os.path.join(directory, file_name)
 
 		img = cv2.imread(img_path)
 		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
 		if algorithm == Algorithm.SWIFT:
-			sift = cv2.xfeatures2d.SIFT_create(value)
+			sift = cv2.xfeatures2d.SIFT_create(70)
 			kp, des = sift.detectAndCompute(gray, None)
 
 		else:
-			surf = cv2.SURF(value)
+			surf = cv2.xfeatures2d.SURF_create(value)
 			kp, des = surf.detectAndCompute(gray, None)
 		
 		
@@ -70,6 +73,8 @@ def create_bow(directory, df, algorithm=Algorithm.SWIFT, value=None):
 			print(i, 'files done')
 		
 		i += 1
+
+
 
 		#img = cv2.drawKeypoints(gray, kp, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 		#plt.imshow(img)

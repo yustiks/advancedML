@@ -17,6 +17,7 @@ from sklearn.ensemble import AdaBoostRegressor
 from xgboost import XGBClassifier
 import warnings
 from enum import Enum
+import copy
 
 
 class Library(Enum):
@@ -142,13 +143,15 @@ if __name__ == "__main__":
 
 	data_set, best_values = load_initial_data()
 
+	empty_values = copy.deepcopy(best_values)
+
 	rng = np.random.RandomState(1)
 
-	print('Loading data....')
+	print('Loading data....\n')
 
 	for feature, feature_data in data_set.items():
 		
-		print('Feature type:', feature)
+		print('############## Feature type:', feature)
 		
 		for feature_name, data in feature_data.items():
 
@@ -180,13 +183,15 @@ if __name__ == "__main__":
 				print('Data type: %s, Scikit-Learn Acc: %.2f, XGBoost Acc: %.2f' % (colour_value, accuracy, xgb_accuracy))
 
 
-	print()
-	print('Best scores:')
+		print('\nBest scores:')
 
-	for key, data in best_values.items():
+		for key, data in best_values.items():
 
-		print('Feature type: %10s' % key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'], 'Lib:', data['lib'])
+			print('Feature type: %10s' % key, 'Data Type:', data['data_type'], 'Accuracy: %.2f' % data['accuracy'], 'Lib:', data['lib'])
 
+		best_values = copy.deepcopy(empty_values)
+
+		print('\n')
 
 	# plot tree (works only for scikit)
 
