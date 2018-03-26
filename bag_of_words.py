@@ -11,7 +11,7 @@ from enum import Enum
 
 class Algorithm(Enum):
 
-	SWIFT = "SWIFT"
+	SIFT = "SIFT"
 	SURF = "SURF"
 
 
@@ -30,10 +30,10 @@ def create_dirs(datasets_path, folder_name):
 
 
 
-def create_bow(directory, df, algorithm=Algorithm.SWIFT, value=None):
+def create_bow(directory, df, algorithm=Algorithm.SIFT, value=None):
 
 	if value is None:
-		value = 0 if algorithm == Algorithm.SWIFT else 100
+		value = 0 if algorithm == Algorithm.SIFT else 100
 
 	# initial data
 	data_size = df.shape[0]
@@ -57,7 +57,7 @@ def create_bow(directory, df, algorithm=Algorithm.SWIFT, value=None):
 		img = cv2.imread(img_path)
 		gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
 
-		if algorithm == Algorithm.SWIFT:
+		if algorithm == Algorithm.SIFT:
 			sift = cv2.xfeatures2d.SIFT_create(70)
 			kp, des = sift.detectAndCompute(gray, None)
 
@@ -87,7 +87,7 @@ def create_bow(directory, df, algorithm=Algorithm.SWIFT, value=None):
 if __name__ == "__main__":
 	
 	datasets_path = ('./by_style/', './by_country/', './by_product/' )
-	folder_names = ['swift_bag_of_words', 'surf_bag_of_words']
+	folder_names = ['sift_bag_of_words', 'surf_bag_of_words']
 	new_paths = []
 
 	for folder in folder_names:
@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
 		print('Processing ', folder)
 
-		algorithm = Algorithm.SWIFT if j == 0 else Algorithm.SURF
+		algorithm = Algorithm.SIFT if j == 0 else Algorithm.SURF
 	
 		for i, path in enumerate(datasets_path):
 
