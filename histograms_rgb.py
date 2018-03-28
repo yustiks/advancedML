@@ -88,7 +88,7 @@ def make_histogram(img, clusters_size):
 def serialize_histograms(problem, dataset_type, dataset, labels, clusters_size):
 	
 	path = os.path.join(problem, dataset_type + \
-	 ('_hsv_histograms_%.3d.dat' % clusters_size))
+	 ('_rgb_histograms_%.3d.dat' % clusters_size))
 	dataset.dump(path)
 
 	#labels_path = os.path.join(problem, dataset_type + \
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     }
 
     # create different bin sizes
-    for bin_size in [256]:
+    for bin_size in [256, 128, 64, 32, 16, 10]:
 
         # operate on different problems
         for problem in ['by_country', 'by_style', 'by_product']:

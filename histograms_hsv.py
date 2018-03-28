@@ -105,7 +105,7 @@ if __name__ == "__main__":
     }
 
     # create different bin sizes
-    for bin_size in [256]:
+    for bin_size in [256, 128, 64, 32, 16, 10]:
 
         # operate on different problems
         for problem in ['by_country', 'by_style', 'by_product']:
