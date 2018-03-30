@@ -18,12 +18,14 @@ from xgboost import XGBClassifier
 import warnings
 from enum import Enum
 import copy
+import lightgbm as lgb
 
 
 class Library(Enum):
 
 	SCIKIT = "scikit"
 	XGBOOST = "xgboost"
+	LGB = 'lgb'
 
 
 def get_data(path, datasets_path):
@@ -138,14 +140,56 @@ def load_initial_data():
 
 	return data_set, best_values
 
+
+def get_predictions(classifiers, data_parts, colour_value):
+
+	testing_data, testing_labels, training_data, training_labels = get_pickles(data_parts)
+
+	scores = []
+
+	for classifier_name, clf_object in classifiers.items():
+		
+		clf_object.fit(training_data, training_labels)
+		score = clf_object.score(testing_data, testing_labels)
+		scores.append(score)
+
+	lib, best = (Library.SCIKIT, 0)
+
+	keys = list(classifiers.keys())
+	for i, score in enumerate(scores):
+
+		if score > best:
+			lib, best = keys[i], score
+
+	scores.insert(0, colour_value)
+
+	print('Data type: %s, Scikit-Learn Acc: %.2f, XGBoost Acc: %.2f, LGB Acc: %.2f' % tuple(scores))
+
+	return {
+		'accuracy': best, 
+		'class_names': 0, 
+		'values': [testing_data, testing_labels, training_data, training_labels],
+	 	'data_type': colour_value,
+	 	'lib': None
+ 	}
+
+
 if __name__ == "__main__":
-	warnings.filterwarnings("ignore", category=DeprecationWarning) 
+	
+	warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 	data_set, best_values = load_initial_data()
 
 	empty_values = copy.deepcopy(best_values)
 
 	rng = np.random.RandomState(1)
+
+	# play with parameters
+	classifiers = {
+		Library.SCIKIT: tree.DecisionTreeClassifier(), 
+		Library.XGBOOST: XGBClassifier(learning_rate=0.2, n_estimators=100),
+		Library.LGB: lgb.LGBMClassifier(num_leaves=5, boosting_type='dart')
+	}
 
 	print('Loading data....\n')
 
@@ -159,29 +203,16 @@ if __name__ == "__main__":
 			
 			for colour_value, data_parts in data.items(): 
 
-				testing_data, testing_labels, training_data, training_labels = get_pickles(data_parts)
+				try:
+						
+					result = get_predictions(copy.deepcopy(classifiers), data_parts, colour_value)
+					#print(result)
+					if best_values[feature_name]['accuracy'] < result['accuracy']:
+						
+						best_values[feature_name] = result		
 
-				# scikit-learn
-				classifier = tree.DecisionTreeClassifier().fit(training_data, training_labels)
-				accuracy = classifier.score(testing_data, testing_labels)
-
-				# xgboost
-				xgb = XGBClassifier().fit(training_data, training_labels)
-				xgb_result = xgb.predict(testing_data)
-				predictions = [round(value) for value in xgb_result]
-				xgb_accuracy = accuracy_score(testing_labels, predictions)
-
-				lib, best = (Library.SCIKIT, accuracy) if accuracy > xgb_accuracy else (Library.XGBOOST, xgb_accuracy)
-
-				if best_values[feature_name]['accuracy'] < best:
-					
-					best_values[feature_name]['accuracy'] = best
-					best_values[feature_name]['values'] = [testing_data, testing_labels, training_data, training_labels]
-					best_values[feature_name]['data_type'] = colour_value
-					best_values[feature_name]['lib'] = lib
-
-				print('Data type: %s, Scikit-Learn Acc: %.2f, XGBoost Acc: %.2f' % (colour_value, accuracy, xgb_accuracy))
-
+				except:
+					continue
 
 		print('\nBest scores:')
 
