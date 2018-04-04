@@ -18,10 +18,10 @@ import matplotlib.pyplot as plt
 
 data = pd.read_csv(r"decor_extended.csv")
 HogValues = pd.read_csv(r"Hog_Values.csv")
-#Ydata = data.iloc[:,0] #target values labels based on Country
+Ydata = data.iloc[:,0] #target values labels based on Country
 #Ydata = data.iloc[:,2] #target values labels based on Style
 Xdata = HogValues.iloc[:] #data-------Hog Values 
-Ydata = data.iloc[:,4] #target values labels based on Style
+#Ydata = data.iloc[:,4] #target values labels based on Style
 
 #print((Xdata))
 print((Ydata))
@@ -50,7 +50,7 @@ x_train, x_test, y_train, y_test = train_test_split(Xdata,Ydata, test_size=0.2, 
 #print(y_train)
 #------------------------------------------------------------------------------
 # DecisionTree
-features_in_label = 2; #according to the label
+features_in_label = 4; #according to the label
  
 Dt = DecisionTreeClassifier()
 Dt.fit(x_train,y_train)
@@ -69,7 +69,7 @@ print('Random Forest ')
 print(Accuracy_RandomForest)
 #------------------------------------------------------------------------------
 # AdaBoost
-AdaBoost = AdaBoostClassifier(DecisionTreeClassifier(),n_estimators=100,
+AdaBoost = AdaBoostClassifier(base_estimator=None,n_estimators=100,
                               learning_rate=0.1,algorithm='SAMME.R', 
                               random_state=None)
 AdaBoost.fit(x_train,y_train)
