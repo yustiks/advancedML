@@ -38,8 +38,8 @@ x_train, x_test, y_train, y_test = train_test_split(Xdata,Ydata, test_size=0.2, 
 #x_train = Xdata[:3095]
 #x_test = Xdata[3096:3879]
 #print(x_test)
-#y_csvtrain = pd.read_csv(r"C:\Users\aswin\Desktop\advancedML\by_country\training.csv")
-#y_csvtest = pd.read_csv(r"C:\Users\aswin\Desktop\advancedML\by_country\testing.csv")
+#y_csvtrain = pd.read_csv(r"advancedML\by_country\training.csv")
+#y_csvtest = pd.read_csv(r"advancedML\by_country\testing.csv")
 #y_train =y_csvtrain.iloc[:,1] 
 #y_test = y_csvtest.iloc[:,1]
 #print(y_train)
