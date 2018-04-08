@@ -68,7 +68,9 @@ def serialize_style(images_path, style_element, test_samples_no, samples_per_img
 
 	# read images from file
 	images = np.asarray(list(map((lambda img_name: 
-		cv2.imread(os.path.join('..', images_path, img_name), cv2.IMREAD_COLOR)),
+		cv2.cvtColor(
+			(cv2.imread(os.path.join('..', images_path, img_name), cv2.IMREAD_COLOR)),
+			cv2.COLOR_BGR2RGB)),
 		img_names)))
 
 	# split the data into training and test
