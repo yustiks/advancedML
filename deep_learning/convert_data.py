@@ -51,9 +51,13 @@ def process_data(dataset_type, dataset_sizes):
 
 			print('training', index)
 			
-			# read image
-			image = cv2.imread(os.path.join(training_data, row[0]),
+			# read image as bgr
+			image_bgr = cv2.imread(os.path.join(training_data, row[0]),
 								   cv2.IMREAD_COLOR)
+
+			# convert to rgb
+			image = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+
 			# add dimension
 			image = image.reshape((1, IMG_SIZE, IMG_SIZE, CHANNELS))
 
