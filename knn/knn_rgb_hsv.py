@@ -9,11 +9,11 @@ from sklearn.neighbors import KNeighborsClassifier
 
 """read histograms"""
 def read_hist(problem, bins):
-#    train_path = os.path.join(problem,'training_rgb_histograms_{}.dat'.format(bins))
-    train_path = os.path.join(problem,'training_hsv_histograms_{}.dat'.format(bins))
+    train_path = os.path.join(problem,'training_rgb_histograms_{}.dat'.format(bins))
+#    train_path = os.path.join(problem,'training_hsv_histograms_{}.dat'.format(bins))
     hist_train = np.load(train_path)
-#    test_path = os.path.join(problem,'testing_rgb_histograms_{}.dat'.format(bins))
-    test_path = os.path.join(problem,'testing_hsv_histograms_{}.dat'.format(bins))
+    test_path = os.path.join(problem,'testing_rgb_histograms_{}.dat'.format(bins))
+ #   test_path = os.path.join(problem,'testing_hsv_histograms_{}.dat'.format(bins))
     hist_test = np.load(test_path)
     return hist_train, hist_test
 
@@ -25,8 +25,8 @@ def read_labels(problem, bins):
     labels_test = np.load(test_path)
     return labels_train, labels_test
 
-def knn1(training, labels, test, real):
-    model = KNeighborsClassifier(n_neighbors=2, weights='distance')
+def knn1(training, labels, test, real, k):
+    model = KNeighborsClassifier(n_neighbors=k, weights='distance')
     #model = KNeighborsClassifier(n_neighbors=1, weights='uniform')
     #model = DecisionTreeClassifier()
     model.fit(training, labels) 
@@ -51,4 +51,6 @@ if __name__ == "__main__":
             print(colors_in_histogram)
             hist_train, hist_test = read_hist(problem, colors_in_histogram)
             labels_train, labels_test = read_labels(problem, colors_in_histogram)
-            knn1(hist_train, labels_train, hist_test, labels_test)
+            for k in range(1,11):
+ #               print('k=',str(k))
+                knn1(hist_train, labels_train, hist_test, labels_test, k)

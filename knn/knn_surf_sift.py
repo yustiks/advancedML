@@ -188,7 +188,7 @@ if __name__ == "__main__":
 
 	# play with parameters
 	classifiers = {
-        Library.KNN: KNeighborsClassifier(n_neighbors=2, weights='distance'), 
+        Library.KNN: KNeighborsClassifier(n_neighbors=10, weights='distance'), 
 		#Library.SCIKIT: tree.DecisionTreeClassifier(), 
 		#Library.XGBOOST: XGBClassifier(learning_rate=0.2, n_estimators=100),
 		#Library.LGB: lgb.LGBMClassifier(num_leaves=5, boosting_type='dart')
