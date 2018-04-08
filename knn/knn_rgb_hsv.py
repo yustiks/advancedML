@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# knn on histograms_rgb and histograms_hsv
 
 import numpy as np
 import os
