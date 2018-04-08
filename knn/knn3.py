@@ -1,4 +1,5 @@
 #!/usr/bin/env python -W ignore::DeprecationWarning
+# knn on SURF and SIFT
 
 import pandas as pd
 import numpy as np
