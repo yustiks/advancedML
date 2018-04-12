@@ -18,7 +18,8 @@ import numpy as np
 from skimage import color
 from skimage import io
 import scipy
-
+import csv
+import pandas as pd
 def read_images():
     images = []
     images_gx = []
@@ -26,6 +27,7 @@ def read_images():
     laplacian_Out = []
     magnitude = []
     out_image = []
+    hog_values = []
 
     for image_name in os.listdir(r'by_style\training'):
         impath = os.path.join(r'by_style\training', image_name)
@@ -43,13 +45,15 @@ def read_images():
             
         fd, hog_image = hog(absGx, orientations=8, pixels_per_cell=(16, 16),
                 cells_per_block=(1, 1), visualise=True)
+        hog_values.append(fd)
         out_image.append(hog_image)
         images.append(np.array(img))    
         images_gx.append(absGx)
         images_gy.append(absGy)
         laplacian_Out.append(laplacian)
         magnitude.append(mag)
-    return images, images_gx, images_gy, laplacian_Out, magnitude, out_image 
+        
+    return images, images_gx, images_gy, laplacian_Out, magnitude, out_image, hog_values 
 
 #==============================================================================
 # def HOG_Descriptor():
@@ -74,10 +78,10 @@ def read_images():
 
 if __name__ == "__main__":  
     pic = 278
-    data,X ,Y, Laplac, Mag, HOG = read_images()
+    data,X ,Y, Laplac, Mag, HOG,HogData = read_images()
     print('Data shape:', np.array(data).shape)
     print('Data Type:', np.array(data).dtype)
-
+    print(HogData[pic])
 
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1,5)
     ax1.imshow(data[pic])
@@ -85,6 +89,10 @@ if __name__ == "__main__":
     ax3.imshow(Y[pic])
     ax4.imshow(Mag[pic])
     ax5.imshow(HOG[pic])
+    
+    dataHog = HogData
+    dataHog = pd.DataFrame(dataHog)
+    dataHog.to_csv('Hog Data.csv', index=False, header = False)
 #==============================================================================
 #     hog_val = HOG_Descriptor()
 #     plt.imshow(hog_val[21])
