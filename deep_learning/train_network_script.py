@@ -3,7 +3,7 @@ import math
 import shutil
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from read_data import *
 
@@ -16,7 +16,7 @@ classes_dict = {
 problem_type = 'by_style' 
 
 restoring_mode = False
-saving_mode = False
+saving_mode = True
 
 restoring_name = 'first_model.ckpt'
 saving_name = 'first_model.ckpt'
@@ -24,9 +24,9 @@ saving_name = 'first_model.ckpt'
 restoring_path = os.path.join('models', problem_type, restoring_name)
 saving_path = os.path.join('models', problem_type, saving_name)
 
-EPOCHS = 10
-BATCH_SIZE = 8
-VALIDATION_BATCH = 16
+EPOCHS = 1000000
+BATCH_SIZE = 32
+VALIDATION_BATCH = 32
 
 IMG_SIZE = 150
 CLASSES = classes_dict[problem_type]
@@ -115,6 +115,7 @@ with tf.device('/cpu:0'):
     images = (tf.cast(images, tf.float32) / 255.0)
     # correct the labels     
     labels = labels - 1
+
 
 with tf.device('/gpu:0'):
 
@@ -205,7 +206,7 @@ labels_validation = np.load(os.path.join('data_' + problem_type, 'testing_labels
 
 try:
     step = 0
-    MILESTONE = 25
+    MILESTONE = 100
     
     min_val_loss = math.inf
     max_val_acc = -math.inf
@@ -276,7 +277,7 @@ try:
             print("  ||  Testing >> loss = {1:.2f} accuracy = {2:5.2f}%" \
                   .format(step, validation_loss, 100 * validation_acc), flush=True, end="")
                         
-            saving_condition = (validation_loss < min_val_loss)
+            saving_condition = (validation_acc > max_val_acc)
 
             # save the model for later use         
             if saving_mode and saving_condition:
