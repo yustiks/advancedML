@@ -19,7 +19,7 @@ restoring_mode = False
 saving_mode = True
 
 restoring_name = 'first_model.ckpt'
-saving_name = 'first_model.ckpt'
+saving_name = 'slim_shady.ckpt'
 
 restoring_path = os.path.join('models', problem_type, restoring_name)
 saving_path = os.path.join('models', problem_type, saving_name)
@@ -112,7 +112,7 @@ with tf.device('/cpu:0'):
                                           lambda: (images_val, labels_val))
 
     # normalize the images     
-    images = (tf.cast(images, tf.float32) / 255.0)
+    images = (tf.cast(images, tf.float32) / 127.5 - 1)
     # correct the labels     
     labels = labels - 1
 
@@ -121,23 +121,25 @@ with tf.device('/gpu:0'):
 
     #==================[ CONVOLUTIONAL LAYERS ]==================#
     
-    images_conv_11 = conv_layer(images, 16, (5, 5), "conv_11", "relu")
-    images_conv_12 = conv_layer(images_conv_11, 16, (5, 5), "conv_12", "relu")
+    images_conv_11 = conv_layer(images, 8, (5, 5), "conv_11", "relu")
+    images_conv_12 = conv_layer(images_conv_11, 8, (5, 5), "conv_12", "relu")
     images_pool_1  = pooling_layer(images_conv_12, (3, 3))
     
-    images_conv_21 = conv_layer(images_pool_1, 32, (3, 3), "conv_21", "relu")
-    images_conv_22 = conv_layer(images_conv_21, 32, (3, 3), "conv_22", "relu")
+    images_conv_21 = conv_layer(images_pool_1, 16, (3, 3), "conv_21", "relu")
+    images_conv_22 = conv_layer(images_conv_21, 16, (3, 3), "conv_22", "relu")
     images_pool_2  = pooling_layer(images_conv_22, (3, 3))
         
     #==================[     DENSE LAYERS     ]==================#
     
     images_flatten = tf.contrib.layers.flatten(images_pool_2)
-    images_dense_1 = dense_layer(images_flatten, 128, "dense_1", "relu")
-    images_dense_2 = dense_layer(images_dense_1, 128, "dense_2", "relu")
+    images_dense_1 = dense_layer(images_flatten, 64, "dense_1", "relu")
+    images_dropped_1 = tf.nn.dropout(images_dense_1, 0.5, name="dropped_1")
+    images_dense_2 = dense_layer(images_dropped_1, 64, "dense_2", "relu")
+    images_dropped_2 = tf.nn.dropout(images_dense_2, 0.5, name="dropped_2")
     
     #==================[     OUTPUT LAYER     ]==================#
     
-    logits = dense_layer(images_dense_2, CLASSES, "logits")
+    logits = dense_layer(images_dropped_2, CLASSES, "logits")
     xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels,
                                                               logits=logits)
     loss = tf.reduce_mean(xentropy, name="loss")
