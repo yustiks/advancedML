@@ -37,4 +37,22 @@ def display_confussion_matrix(conf_matrix, problem_type):
 	else:
 		return
 
-	
+	print("")
+	print("{:^11}".format(" "), end="")
+	for e in labels_dict.values():
+		print("|{:^11}".format(e), end="")
+	print("")
+
+	for t in range(len(conf_matrix)):
+		print("{:^11}".format(labels_dict[t]), end="")
+		for p in range(len(conf_matrix)):
+			print("|{:^11}".format(conf_matrix[t, p]), end="")
+		print("")
+
+	plt.title("Confussion Heat Map")
+	plt.imshow(conf_matrix, cmap='gray')
+	plt.xticks(list(labels_dict.keys()), list(labels_dict.values()), rotation=45)
+	plt.yticks(list(labels_dict.keys()), list(labels_dict.values()))
+	[x.set_color("yellow") for x in plt.gca().get_xticklabels()]
+	plt.show()
+
