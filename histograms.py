@@ -91,21 +91,24 @@ def serialize_histograms(problem, dataset_type, dataset, labels, clusters_size):
 	 ('_hsv_histograms_%.3d.dat' % clusters_size))
 	dataset.dump(path)
 
-	#labels_path = os.path.join(problem, dataset_type + \
-	# ('_labels_%.3d.dat' % clusters_size))
-	#labels.dump(labels_path)
+	labels_path = os.path.join(problem, dataset_type + \
+	('_labels_%.3d.dat' % clusters_size))
+	labels.dump(labels_path)
 	
 
 if __name__ == "__main__":  
     
+    # shtomper
+    sys.exit("Script blocked ! Don't alter the data")
+    
     dataset_sizes = {
         'by_country' : (387, 98),
-        'by_product' : (387, 98),
+        'by_product' : (388, 97),
         'by_style' : (386, 99)
     }
 
     # create different bin sizes
-    for bin_size in [256]:
+    for bin_size in [256, 128, 64, 32]:
 
         # operate on different problems
         for problem in ['by_country', 'by_style', 'by_product']:

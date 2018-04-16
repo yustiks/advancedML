@@ -102,5 +102,5 @@ if __name__ == '__main__':
     
 
 	process_data('by_country', (3096, 784))
-	process_data('by_product', (3096, 784))
+	process_data('by_product', (3104, 776))
 	process_data('by_style', (3088, 792))
