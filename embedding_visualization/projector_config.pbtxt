@@ -1,3 +1,9 @@
 embeddings {
-  tensor_name: "word_embedding:0"
+  tensor_name: "img_embedding:0"
+  metadata_path: "labels_016.tsv"
+  sprite {
+    image_path: "sprite.png"
+    single_image_dim: 150
+    single_image_dim: 150
+  }
 }
